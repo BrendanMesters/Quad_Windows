@@ -1,8 +1,38 @@
 #! /usr/bin/python3
 
 import os
+import re
 import subprocess
 import time
+
+
+def window_id_from_pid(pid = -1):
+    assert (type(pid) == int), f"The PID is supposed to be an integer but was a `{type(pid)}` with value `{pid}`"
+    call = ["wmctrl", "-lp"]
+    proc = subprocess.run(call, capture_output=True)
+    output = str(proc.stdout)
+    
+    # take off the binary tag that persists after the `str` call
+    output = output[2 : -1]
+
+    # loop over all lines (which are seperated by \\n instead of \n)
+    # and split that line with the regex checking for one or more spaces
+    # if the pid is the one we are looking for return its window_id.
+    for l in output.split("\\n"):
+        line_list = re.split("[ ]+", l)
+        if (len(line_list) < 3): continue
+        if (int(line_list[2]) == pid):
+            return line_list[0]
+
+
+
+
+
+#
+########### THE CODE BELOW IS QUICKLY BODGED TO WORK WITH THE SYSTEM ABOVE
+########### THIS CODE SHOULD BE CLEANED UP AND UPGRADED IN THE FUTURE
+#
+
 
 
 
@@ -16,7 +46,7 @@ used_desktop = 1
 
 
 #reading in PIDs
-f = open("/home/brendan/Documents/PythonScripts/wmctrl/session_info", "r")
+f = open("/tmp/quadWindows_TEMP", "r")
 
 spot_id = ""
 ramb_id = ""
@@ -26,15 +56,20 @@ firefox_id = ""
 for l in f:
     parts = l.split(" ")
     if ("spot_id" in parts[0]):
-        spot_id = int(parts[1], 16)
+        spot_id = int(parts[1])
     if ("ramb_id" in parts[0]):
-        ramb_id = int(parts[1], 16)
+        ramb_id = int(parts[1])
     if ("lutris_id" in parts[0]):
-        lutris_id = int(parts[1], 16)
+        lutris_id = int(parts[1])
     if ("firefox_id" in parts[0]):
-        firefox_id = int(parts[1], 16)
+        firefox_id = int(parts[1])
 
 f.close()
+
+spot_id = window_id_from_pid(spot_id)
+ramb_id = window_id_from_pid(ramb_id)
+lutris_id = window_id_from_pid(lutris_id)
+firefox_id = window_id_from_pid(firefox_id)
 
 
 def move_window(PID, gxywh, focus = False, desk = -1):

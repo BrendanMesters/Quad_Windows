@@ -2,88 +2,32 @@ import os
 import subprocess
 import time
 
-#
-## START ALL APPLICATIONS
-#
+# Pleaser make sure that apps contains the name that you use to
+# launch them from the terminal (aka `spotify` in bash launches spotify).
 
-os.system("nohup spotify &") 
-os.system("nohup rambox &")
-os.system("nohup lutris &")
-os.system("nohup firefox --new-window www.duck.com &")
-
-
-time.sleep(15)
-
-output = subprocess.run(["wmctrl", "-l"], capture_output=True)
-print("\n\n")
-
-s = output.stdout.decode('UTF-8')
-
-processees = s.split("\n")
-"""
-
-for p in processees:
-    foo = p.split(" ") 
-    if (len(foo) < 4):
-        continue
-    id = foo[0]
-
-    name_1 = foo[4]
-    
-    if (name_1 == "Spotify"):
-        os.system(f"wmctrl -i -r {id} -N corner_spotify")
-    if (name_1 == "Rambox"):
-        os.system(f"wmctrl -i -r {id} -N corner_rambox")
-    if (name_1 == "Lutris"):
-        os.system(f"wmctrl -i -r {id} -N corner_lutris")
+# note that their tmp variable name will not change automatically, though this shouldn't effect the functionality
+apps = ["spotify", "rambox", "lutris", "firefox"]
 
 
 
-
-"""
-spot_id = ""
-ramb_id = ""
-lutris_id = ""
-firefox_id = ""
-
-
+PIDs = {}
+for app in apps:
+    call = ["nohup", "APP, MUST BE OVERWRITTEN", "&"]
+    call[1] = app
+    proc = subprocess.Popen(call)
+    PIDs[app] = proc.pid
 
 
-for p in processees:
-    foo = p.split(" ") 
-    if (len(foo) < 4):
-        continue
-    id = foo[0]
-
-    name_1 = foo[4]
-    
-    if (name_1 == "Spotify"):
-        spot_id = str(id)
-    if (name_1 == "Rambox"):
-        ramb_id = str(id)
-    if (name_1 == "Lutris"):
-        lutris_id = str(id)
-    if (name_1 == "DuckDuckGo"):
-        firefox_id = str(id)
+# store pids in file_buffer to write to file in the next part.
+keys = PIDs.keys()
+file_buffer = []
+if ( apps[0] in keys): file_buffer.append(f"spot_id: {PIDs[apps[0]]}\n")
+if ( apps[1] in keys): file_buffer.append(f"ramb_id: {PIDs[apps[1]]}\n")
+if ( apps[2] in keys): file_buffer.append(f"lutris_id: {PIDs[apps[2]]}\n")
+if ( apps[3] in keys): file_buffer.append(f"firefox_id: {PIDs[apps[3]]}\n")
 
 
 
-
-load_settings = []
-if (spot_id != ""):
-    load_settings.append(f"spot_id: {spot_id}\n")
-if (ramb_id != ""):
-    load_settings.append(f"ramb_id: {ramb_id}\n")
-if (lutris_id != ""):
-    load_settings.append(f"lutris_id: {lutris_id}\n")
-if (firefox_id != ""):
-    load_settings.append(f"firefox_id: {firefox_id}\n")
-
-
-f = open("/home/brendan/Documents/PythonScripts/wmctrl/session_info", "w")
-f.writelines(load_settings)
+f = open("/tmp/quadWindows_TEMP", "w")
+f.writelines(file_buffer)
 f.close()
-
-
-
-os.system("wmctrl -s 1")
